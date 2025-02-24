@@ -147,6 +147,7 @@ def removeColumn(data, col, display=True):
     return data
 
 
+
 def maintainDataDict(data, removeColLst, txt= '', col="Information", display=True):
     """
     Maintain data dictionary
@@ -161,6 +162,7 @@ def maintainDataDict(data, removeColLst, txt= '', col="Information", display=Tru
         print(f"Data Dictionary Updated.")
 
     return data
+
 
 
 def HouseKeeping(data, removeColLst, dataDict,  dataLabel, dataCAN, dataDON, dataBoth, dataOrdinal, dataNominal, dataNumeric, dataDrop, dataObject, dataUnknown, dataDate, txt, display=True):
@@ -190,6 +192,28 @@ def HouseKeeping(data, removeColLst, dataDict,  dataLabel, dataCAN, dataDON, dat
     return data, dataDict, dataLabel, dataCAN, dataDON, dataBoth, dataOrdinal, dataNominal, dataNumeric, dataDrop, dataObject, dataUnknown, dataDate
 
 
+
+def HouseKeepingPlus(data, removeColLst, dataLabel, dataCAN, dataDON, dataBoth, dataOrdinal, dataNominal, dataNumeric, dataDrop, display=True):
+    """
+    Run helper fuction for house keeping
+    """
+    # remove DataFrame data (house keeping)
+    dataLabel = removeRowUsingMask(dataLabel, removeColLst, colstr='column', string='df_label', display=display)
+    dataCAN = removeRowUsingMask(dataCAN, removeColLst, colstr='column', string='df_can', display=display)
+    dataDON = removeRowUsingMask(dataDON, removeColLst, colstr='column', string='df_don', display=display)
+    dataBoth = removeRowUsingMask(dataBoth, removeColLst, colstr='column',  string='df_both', display=display)
+    dataOrdinal = removeRowUsingMask(dataOrdinal, removeColLst, colstr='column',  string='df_ordinal', display=display)
+    dataNominal = removeRowUsingMask(dataNominal, removeColLst, colstr='column', string='df_nominal',  display=display)
+    dataNumeric = removeRowUsingMask(dataNumeric, removeColLst, colstr='column', string='df_numeric',  display=display)
+    dataDrop = removeRowUsingMask(dataDrop, removeColLst, colstr='column',  string='df_drop', display=display)
+    
+    # remove features
+    data = removeColumn(data, removeColLst, display=display)
+
+    return data, dataLabel, dataCAN, dataDON, dataBoth, dataOrdinal, dataNominal, dataNumeric, dataDrop
+
+
+
 def dataDictSearch(datadic, colList, indexView=True):
     """
     This function is designed to search for a given column name (col) in a DataFrame (datadic) 
@@ -201,7 +225,6 @@ def dataDictSearch(datadic, colList, indexView=True):
     # display
     print(data.to_string(index=indexView))
     
-
 
 
 def featureInfo(data, datadict, strCol, unique=False, indexView=True):

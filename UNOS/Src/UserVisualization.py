@@ -203,7 +203,7 @@ def safe_exp(data, max_value=700):
     return np.exp(data)
 
 
-def transformPlots(data, txt='', bins=30, figsize=(20, 5)):
+def transformPlots(data, txt='', bins=30, figsize=(20, 10)):
     """
     Plots histograms of the original data, log-transformed data, 
     square root-transformed data, and exponentially-transformed data 
@@ -211,11 +211,12 @@ def transformPlots(data, txt='', bins=30, figsize=(20, 5)):
     """
     # Transformations
     log_data = np.log(data + 1)  # Adding 1 to avoid log(0)
-    sqrt_data = np.sqrt(data)
+    sqrt_data = np.sqrt(data) # Square root transformation
+    square_data = np.square(data) # Square transformation
     exp_data = safe_exp(data)  # Exponential transformation
-    
+
     # Creating subplots
-    fig, axes = plt.subplots(1, 4, figsize=figsize, sharey=True)
+    fig, axes = plt.subplots(1, 5, figsize=figsize, sharey=True)
     
     # Plotting the histograms
     axes[0].hist(data, bins=bins, color='blue', alpha=0.7, edgecolor='black')
@@ -230,10 +231,14 @@ def transformPlots(data, txt='', bins=30, figsize=(20, 5)):
     axes[2].hist(sqrt_data, bins=bins, color='orange', alpha=0.7, edgecolor='black')
     axes[2].set_title(f"Square Root Transformed Data - ({txt})")
     axes[2].set_xlabel(f"Sqrt({txt})")
-    
-    axes[3].hist(exp_data, bins=bins, color='red', alpha=0.7, edgecolor='black')
-    axes[3].set_title(f"Exponential Transformed Data - ({txt})")
-    axes[3].set_xlabel(f"Exp({txt})")
+   
+    axes[3].hist(square_data, bins=bins, color='cyan', alpha=0.7, edgecolor='black')
+    axes[3].set_title(f"Square Transformed Data - ({txt})")
+    axes[3].set_xlabel(f"Square({txt})")
+
+    axes[4].hist(exp_data, bins=bins, color='red', alpha=0.7, edgecolor='black')
+    axes[4].set_title(f"Exponential Transformed Data - ({txt})")
+    axes[4].set_xlabel(f"Exp({txt})")
     
     # Adjust layout and show the plot
     plt.tight_layout()
