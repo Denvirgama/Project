@@ -42,7 +42,11 @@ def mannwhitneyu_combinations(data, features):
     The function performs the Mann-Whitney U test on all combinations of two features 
     in a given list of features. The test checks if there is a significant difference 
     between the distributions of two independent variables. It prints and returns the
-    U-statistic and p-value for each pair of features.
+    U-statistic and p-value for each pair of features. The null hypothesis for the 
+    Mann-Whitney U test is that the two populations being compared have the same distribution. 
+    It assumes that there is no difference between the two groups in terms of their central tendency 
+    or distribution. The alternative hypothesis is that the distributions of the two populations
+    are not identical.
     """
     # ititaize DataFrame
     resultDF = pd.DataFrame(columns=['column1', 'columns2', 'U_statistic', 'p_value'])
