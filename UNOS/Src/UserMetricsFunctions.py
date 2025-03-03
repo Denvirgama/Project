@@ -187,7 +187,7 @@ def LogisticFeatureImportance(model, figsize=(8,10), fontsize=8):
     return LRcoeff_df 
 
 
-def plotFeatureImportance(model, Xdata, figsize=(30,30), display=True):
+def plotFeatureImportance(model, Xdata, figsize=(30,30), fontsize=15, display=True):
     """
     Plot feature importance from the model
     Order List & Bar Plot of Importance
@@ -201,7 +201,7 @@ def plotFeatureImportance(model, Xdata, figsize=(30,30), display=True):
         plt.figure(figsize=figsize)
         # create a bar plot using Seaborn
         ax = sns.barplot(data=data, y=data.index, x = data['Feature Importance Score'], orient= 'h')
-        ax.set_title("Feature Importance Bar Plot", fontsize = 15)
+        ax.set_title("Feature Importance Bar Plot", fontsize = fontsize)
         # add a grid to the x-axis/
         plt.grid(axis='x', linestyle='--')
         plt.show()
