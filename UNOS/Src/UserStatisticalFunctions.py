@@ -5,6 +5,71 @@ import scipy.stats as stats
 from scipy.stats import chi2_contingency
 from itertools import combinations
 from scipy.stats import mannwhitneyu
+from scipy.stats import chisquare
+from scipy.stats import ks_2samp
+
+
+def ChiSquareTest(dataPrior, dataAfter):
+    """
+    Perform a Chi-Square Goodness-of-Fit Test to evaluate whether imputation 
+    has significantly altered the distribution of data. 
+
+    None
+        Prints the Chi-Square statistic, p-value, and an interpretation of 
+        whether the imputation has significantly changed the distribution.
+        (Parametric & same shape required)
+    """
+    # Observed (imputed data) vs. Expected (original data) frequencies
+    observed = dataAfter.dropna().values
+    expected = dataPrior.dropna().values
+    
+    # Perform Chi-Square Goodness-of-Fit Test
+    chi_stat, p_value = chisquare(observed, expected)
+    
+    # display results
+    print(f"Chi-Square Statistic: {chi_stat:.4f}")
+    print(f"p-value: {p_value:.4f}")
+    
+    # print Interpretation
+    if p_value > 0.05:
+        print("✅ Imputation preserved the original distribution.")
+    else:
+        print("⚠️ Imputation significantly altered the original distribution.")
+
+
+
+def imputationTestKS(dataPrior, dataAfter):
+    """
+    Perform the Kolmogorov-Smirnov (KS) test to compare the distributions of original and imputed data.
+
+    This function evaluates whether the imputation process has significantly altered the distribution 
+    of each feature by comparing the non-missing values from the original dataset with the imputed values.
+
+    Notes:
+    ------
+    - The KS test is a non-parametric test that compares two distributions.
+    - A low p-value (≤ 0.05) suggests that the distribution of imputed values differs significantly 
+      from the original non-missing values.
+    - The function assumes that `features` is a predefined list of column names to test.
+    - Non-Parametric
+    """
+    # get features
+    features = dataPrior.columns
+    
+    # perform KS test for each imputed feature
+    for feature in features:
+        original_values = dataPrior.dropna()  # Non-missing values
+        imputed_values = dataAfter  # Imputed values
+        # test
+        ks_stat, p_value = ks_2samp(original_values, imputed_values)
+        # display
+        print(f"Feature: {feature} | KS Statistic: {ks_stat:.4f} | p-value: {p_value:.4f}")
+        
+        # print Interpretation
+        if p_value > 0.05:
+            print("✅ Imputation preserved the distribution.")
+        else:
+            print("⚠️ Imputation may have altered the distribution.")
 
 
 def corrCols(df, method='pearson', threshold=0.9, flag=False):
