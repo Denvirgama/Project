@@ -151,40 +151,118 @@ def stratified_grid(model, parameters, Xdata, ydata, seed, nJobs=-1, nSplit=5, s
     return fit
 
 
+# def LogisticFeatureImportance(model, figsize=(8,10), fontsize=8):
+#     """
+#     This function analyzes the importance of features in a logistic regression model by processing its 
+#     coefficients. It creates a DataFrame with each feature's name, coefficient, effect description, 
+#     odds ratio, percentage change in odds, and probability, including a barh plot.
+#     """
+#     # determine feature information
+#     feature_names = model.feature_names_in_
+#     coefficients = model.coef_
+    
+#     # create a DataFrame
+#     LRcoeff_df = pd.DataFrame({
+#         'Feature': feature_names,
+#         'Coefficient': coefficients[0],
+#         'Description': ['Decrease in the log-odds of the Positive Class' if x < 0 else 'Increase in the log-odds of the Positive Class' for x in coefficients[0]],
+#         'Odd Ratio': np.exp(coefficients[0]),
+#         'Percentage Change in Odds': (np.exp(coefficients[0]) - 1) * 100,
+#         'Probability': np.exp(coefficients[0]) / (1 + np.exp(coefficients[0]))
+#     })
+
+#     # sort by Coefficient
+#     LRcoeff_df = LRcoeff_df.sort_values(by='Coefficient')
+
+#     # reset the index
+#     LRcoeff_df.reset_index(drop=True, inplace=True)
+
+#     # plot feature importance
+#     LRcoeff_df.plot(kind='barh', x='Feature', y='Coefficient', figsize=figsize, title="Feature Importance (Logistic Regression)", fontsize=fontsize)
+#     plt.axvline(0, color='red', linestyle='-')
+#     plt.xlabel("Absolute Coefficient Value")
+#     plt.ylabel("Features")
+#     plt.show()
+
+#     return LRcoeff_df 
+
+
 def LogisticFeatureImportance(model, figsize=(8,10), fontsize=8):
     """
     This function analyzes the importance of features in a logistic regression model by processing its 
     coefficients. It creates a DataFrame with each feature's name, coefficient, effect description, 
-    odds ratio, percentage change in odds, and probability, including a barh plot.
+    odds ratio, percentage change in odds, and probability, including a horizontal bar plot of feature importance.
+    
+    Args:
+    - model: Trained logistic regression model (e.g., from sklearn).
+    - figsize: Tuple defining the figure size for the plot (default: (8, 10)).
+    - fontsize: Font size for axis labels and title (default: 8).
+    
+    Returns:
+    - DataFrame: A DataFrame with feature importance details.
     """
-    # determine feature information
+    # Check if the model has been fitted and has the coef_ attribute
+    if not hasattr(model, 'coef_'):
+        raise ValueError("The model must be a fitted logistic regression model.")
+    
+    # Get feature names and coefficients
     feature_names = model.feature_names_in_
     coefficients = model.coef_
     
-    # create a DataFrame
-    LRcoeff_df = pd.DataFrame({
-        'Feature': feature_names,
-        'Coefficient': coefficients[0],
-        'Description': ['Decrease in the log-odds of the Positive Class' if x < 0 else 'Increase in the log-odds of the Positive Class' for x in coefficients[0]],
-        'Odd Ratio': np.exp(coefficients[0]),
-        'Percentage Change in Odds': (np.exp(coefficients[0]) - 1) * 100,
-        'Probability': np.exp(coefficients[0]) / (1 + np.exp(coefficients[0]))
-    })
-
-    # sort by Coefficient
-    LRcoeff_df = LRcoeff_df.sort_values(by='Coefficient')
-
-    # reset the index
+    # If it's a multi-class logistic regression, handle each class separately
+    if coefficients.ndim > 1:
+        coeff_list = []
+        for i in range(coefficients.shape[0]):
+            class_name = f"Class {i}"
+            class_coefficients = coefficients[i]
+            coeff_list.append(pd.DataFrame({
+                'Feature': feature_names,
+                'Coefficient': class_coefficients,
+                'Description': ['Decrease in the log-odds of the Positive Class' if x < 0 else 'Increase in the log-odds of the Positive Class' for x in class_coefficients],
+                'Odd Ratio': np.exp(class_coefficients),
+                'Percentage Change in Odds': (np.exp(class_coefficients) - 1) * 100,
+                'Probability': np.exp(class_coefficients) / (1 + np.exp(class_coefficients)),
+                'Class': class_name
+            }))
+        # Concatenate dataframes for all classes
+        LRcoeff_df = pd.concat(coeff_list, ignore_index=True)
+    else:
+        # Single class logistic regression
+        LRcoeff_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Coefficient': coefficients[0],
+            'Description': ['Decrease in the log-odds of the Positive Class' if x < 0 else 'Increase in the log-odds of the Positive Class' for x in coefficients[0]],
+            'Odd Ratio': np.exp(coefficients[0]),
+            'Percentage Change in Odds': (np.exp(coefficients[0]) - 1) * 100,
+            'Probability': np.exp(coefficients[0]) / (1 + np.exp(coefficients[0])),
+        })
+    
+    # Sort by Coefficient for better visualization
+    LRcoeff_df = LRcoeff_df.sort_values(by='Coefficient', ascending=False)
+    
+    # Reset the index
     LRcoeff_df.reset_index(drop=True, inplace=True)
-
-    # plot feature importance
-    LRcoeff_df.plot(kind='barh', x='Feature', y='Coefficient', figsize=figsize, title="Feature Importance (Logistic Regression)", fontsize=fontsize)
-    plt.axvline(0, color='red', linestyle='-')
-    plt.xlabel("Absolute Coefficient Value")
+    
+    # Plot feature importance (using Odds Ratio for better interpretability)
+    plt.figure(figsize=figsize)
+    if 'Class' in LRcoeff_df.columns:
+        # Plot for multi-class case
+        for class_name in LRcoeff_df['Class'].unique():
+            class_df = LRcoeff_df[LRcoeff_df['Class'] == class_name]
+            plt.barh(class_df['Feature'], class_df['Odd Ratio'], label=class_name)
+    else:
+        # Single class logistic regression
+        plt.barh(LRcoeff_df['Feature'], LRcoeff_df['Odd Ratio'], color='steelblue')
+    
+    plt.axvline(1, color='red', linestyle='--', label="Odd Ratio = 1 (No Effect)")
+    plt.xlabel("Odds Ratio")
     plt.ylabel("Features")
+    plt.title("Feature Importance in Logistic Regression")
+    plt.legend()
+    plt.tight_layout()
     plt.show()
 
-    return LRcoeff_df 
+    return LRcoeff_df
 
 
 def plotFeatureImportance(model, Xdata, figsize=(30,30), fontsize=15, display=True):
